@@ -1,11 +1,10 @@
 import mongoose from "mongoose";
-
+import  validator from 'validator'
 const UserSchema = new mongoose.Schema({
 
     username:{
         type:String,
         lowercase:true,
-        required:true,
         unique:true,
         
     },
@@ -13,7 +12,13 @@ const UserSchema = new mongoose.Schema({
         type:String,
         required:true,
         unique:true,
-        lowercase:true
+        lowercase:true,
+        validate(value){
+            if (!validator.isEmail(value)) {
+                throw new Error("Email is envalid");
+                
+            }
+        }
     },
     fullName:{
         type:String,
@@ -25,18 +30,16 @@ const UserSchema = new mongoose.Schema({
     },
     avatar:{
         type:String,
-        required:true,
+        // required:true,
     },
     coverImage:{
         type:String,
-        required:true
-    },
+        },
     watchHistory:[
         {
         type:mongoose.Schema.Types.ObjectId,
         ref:"Video",
-        required:true
-        }
+            }
     ],
     likedVideos:[
         {

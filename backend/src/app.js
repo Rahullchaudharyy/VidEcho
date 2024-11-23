@@ -1,9 +1,15 @@
-import express from 'express'
+import express, { json } from 'express'
 import { ConectDatabse } from './Database/Conect.js'
 import dotenv from 'dotenv'
+import { AuthRouter } from './Routers/Auth.js'
+import cookieparser from 'cookie-parser'
 dotenv.config()
 
+
 const app = express()
+app.use(express.json())
+app.use(cookieparser())
+
 ConectDatabse().then(()=>{
     app.listen(process.env.PORT,()=>{
         console.log(`▤ Server Started ↯ on http://localhost:${process.env.PORT}`)
@@ -11,4 +17,8 @@ ConectDatabse().then(()=>{
 }).catch((error)=>{
         console.log(error.message)
 })
+
+
+app.use('/',AuthRouter)
+
 
