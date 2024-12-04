@@ -14,7 +14,7 @@ const AuthRouter = express.Router()
 AuthRouter.post('/api/auth/signup', async (req, res) => {
     try {
 
-        const { email, password, fullName } = req.body;
+        const { email, password, fullName ,avatar} = req.body;
         if (!email || !password || !fullName) {
             return res.status(400).json({
                 message: "Please enter the neccesary fields !!"
@@ -58,7 +58,8 @@ AuthRouter.post('/api/auth/signup', async (req, res) => {
             email,
             fullName,
             password: hashedPassword,
-            username:uniqueusername
+            username:uniqueusername,
+            avatar
         })
 
         await user.save()
@@ -161,7 +162,79 @@ AuthRouter.get('/api/auth/profile', AuthCheck, async (req, res) => {
         })
     }
 })
+AuthRouter.post('/api/auth/resetPassword',async (req,res) => {
+    try {
+        const {email,oldpassword,newpassword} = req.body;
+        if (!email) {
+            return res.status(400).json({
+                message: "Please enter the email"
+            })
+        }
 
+        const user = await User.findOne({email:email})
+        if (!user) {
+            return res.status(400).json({
+                message: "User Does not exist ."
+            })
+        }
+        const isPasswordCorrect = await bcrypt.compare(oldpassword, user.password)
+
+        if (!isPasswordCorrect) {
+            return res.status(400).json({
+                message: "Invallid Credentials "
+            })
+        }
+
+        const hashedPassword = await bcrypt.hash(newpassword,10)
+
+        await User.findByIdAndUpdate({_id:user._id},{
+            password:hashedPassword
+        })
+               // Sending Email 
+        const auth = nodemailer.createTransport(
+            {
+                service: 'gmail',
+                secure: true,
+                port: 465,
+                auth: {
+                    user: process.env.SENDER_EMAIL,
+                    pass: process.env.PASS
+                }
+            }
+        )
+
+        const receiver = {
+            from: process.env.SENDER_EMAIL,
+            to: user.email,
+            subject: 'Password Updated Successfully',
+            text: `Hi ${user.fullName},
+        
+        Your password has been updated successfully. If you didn't make this change, please contact our support team immediately.
+        
+        Stay secure,  
+        The VidEcho Team`
+        };
+        
+
+        auth.sendMail(receiver, (err, emailResponse) => {
+            if (err) {
+                throw new Error(err.message);
+            }
+            console.log("Mail Sent")
+        })
+
+        res.status(201).json({
+            message:'Password Updated successfully'
+        })
+
+
+    } catch (error) {
+        res.status(400).json({
+            message: error.message
+        })
+        console.log(error)
+    }
+})
 
 export { AuthRouter }
 

@@ -1,84 +1,84 @@
 import mongoose from "mongoose";
-import  validator from 'validator'
+import validator from 'validator'
 const UserSchema = new mongoose.Schema({
 
-    username:{
-        type:String,
-        lowercase:true,
-        unique:true,
-        
+    username: {
+        type: String,
+        lowercase: true,
+        unique: true,
+
     },
-    email:{
-        type:String,
-        required:true,
-        unique:true,
-        lowercase:true,
-        validate(value){
+    email: {
+        type: String,
+        required: true,
+        unique: true,
+        lowercase: true,
+        validate(value) {
             if (!validator.isEmail(value)) {
                 throw new Error("Email is envalid");
-                
+
             }
         }
     },
-    fullName:{
-        type:String,
-        required:true,
+    fullName: {
+        type: String,
+        required: true,
     },
-    password:{
-        type:String,
-        required:true,
+    password: {
+        type: String,
+        required: true,
     },
-    avatar:{
-        type:String,
-        // required:true,
+    avatar: {
+        type: String,
+        required: true,
     },
-    coverImage:{
-        type:String,
-        },
-    watchHistory:[
+    coverImage: {
+        type: String,
+    },
+    watchHistory: [
         {
-        type:mongoose.Schema.Types.ObjectId,
-        ref:"Video",
-            }
-    ],
-    likedVideos:[
-        {
-            type:mongoose.Schema.Types.ObjectId,
-            ref:"Video"
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Video",
         }
     ],
-    UsersContent:[
+    likedVideos: [
         {
-             type:mongoose.Schema.Types.ObjectId,
-            ref:"Video"
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Video"
         }
     ],
-    UsersPlaylist:[
+    UsersContent: [
         {
-            type:mongoose.Schema.Types.ObjectId,
-           ref:"Playlist"
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Video"
         }
     ],
-    communityPosts:[
+    UsersPlaylist: [
         {
-              type:mongoose.Schema.Types.ObjectId,
-           ref:"CommunityPost"
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Playlist"
         }
     ],
-    Userlives:[
+    communityPosts: [
         {
-            type:mongoose.Schema.Types.ObjectId,
-            ref:"Video"
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "CommunityPost"
+        }
+    ],
+    Userlives: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Video"
         }
     ]
 },
-{
-    timestamps:true
-})
+    {
+        timestamps: true
+    })
 
 
-const User = mongoose.model('User',UserSchema)
+const User = mongoose.model('User', UserSchema)
 
-export {User}
+export { User }
 
 
