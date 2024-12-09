@@ -4,6 +4,7 @@ import dotenv from 'dotenv'
 import { AuthRouter } from './Routers/Auth.js'
 import cookieparser from 'cookie-parser'
 import { ProfileRouter } from './Routers/Profile.js'
+import { VideoUploadRouter } from './Routers/VideoUpload.js'
 dotenv.config()
 
 
@@ -22,5 +23,6 @@ ConectDatabse().then(()=>{
 
 app.use('/',AuthRouter)
 app.use('/',ProfileRouter)
+app.use('/',VideoUploadRouter)
 
 

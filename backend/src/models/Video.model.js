@@ -31,6 +31,9 @@ const VideoSchema = new mongoose.Schema({
     thumbnail:{
         type:String,
         required:true
+    },
+    tags:{
+        type:[String],
     }
 
 },

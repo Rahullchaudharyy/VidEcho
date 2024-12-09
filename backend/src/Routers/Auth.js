@@ -5,104 +5,117 @@ import jwt from 'jsonwebtoken'
 import { AuthCheck } from '../Middlewares/AuthCheck.js';
 import nodemailer from 'nodemailer';
 import { configDotenv } from 'dotenv';
+import { upload } from '../Middlewares/Multer.js';
+import { UploadImage } from '../utils/ImageUpload.js';
 configDotenv()
 
 
 
 const AuthRouter = express.Router()
 
-AuthRouter.post('/api/auth/signup', async (req, res) => {
+AuthRouter.post('/api/auth/signup', upload.single('avatar'), async (req, res) => {
     try {
 
-        const { email, password, fullName ,avatar} = req.body;
+        const { email, password, fullName } = req.body;
+        const avatar = req.file;
+        // console.log(avatar)
+        const avatarUrl = await UploadImage(avatar.path)
+
+        // const avatar= req.
         if (!email || !password || !fullName) {
             return res.status(400).json({
                 message: "Please enter the neccesary fields !!"
             })
         }
 
-        const UserExists = await User.find({email:email})
-        if (UserExists.length>0) {
+        const UserExists = await User.find({ email: email })
+        if (UserExists.length > 0) {
             // console.log(UserExists)
             throw new Error("User Already Exists");
         }
 
         const hashedPassword = await bcrypt.hash(password, 10)
 
-        const RandomUserNameGen = async (fullName)=>{
+        const RandomUserNameGen = async (fullName) => {
             try {
                 fullName = fullName.replace(/\s+/g, '');
                 let uniqueusername;
-                const user = await User.find({},'username')
-            const existingUsernames  = user.map((user)=>user.username);
-            let attempts = 0;
+                const user = await User.find({}, 'username')
+                const existingUsernames = user.map((user) => user.username);
+                let attempts = 0;
 
-            do {
-                const randomNumber = Math.floor(Math.random() * 10000); 
-                uniqueusername = `${fullName}${randomNumber}`;
-                // console.log(uniqueusername)
-                attempts++
-            } while (existingUsernames.includes(uniqueusername) && attempts < 15);
+                do {
+                    const randomNumber = Math.floor(Math.random() * 10000);
+                    uniqueusername = `${fullName}${randomNumber}`;
+                    // console.log(uniqueusername)
+                    attempts++
+                } while (existingUsernames.includes(uniqueusername) && attempts < 15);
 
-            if (attempts === 15) {
-                throw new Error("Can't Generate the Usernmae");
-            }
-            return uniqueusername
+                if (attempts === 15) {
+                    throw new Error("Can't Generate the Usernmae");
+                }
+                return uniqueusername
             } catch (error) {
                 res.json(error.message)
             }
 
-        } 
-       const uniqueusername = await RandomUserNameGen(fullName)
+        }
+        const uniqueusername = await RandomUserNameGen(fullName)
         const user = new User({
             email,
             fullName,
             password: hashedPassword,
-            username:uniqueusername,
-            avatar
+            username: uniqueusername,
+            avatar: avatarUrl
         })
 
         await user.save()
-            // Sending Email 
-        // const auth = nodemailer.createTransport(
-        //     {
-        //         service: 'gmail',
-        //         secure: true,
-        //         port: 465,
-        //         auth: {
-        //             user: process.env.SENDER_EMAIL,
-        //             pass: process.env.PASS
-        //         }
-        //     }
-        // )
+        // Sending Email 
+        if (process.env.NODE_ENV != 'development') {
 
-        // const reciever = {
-        //     from: process.env.SENDER_EMAIL,
-        //     to: email,
-        //     subject: 'Welcome to VidEcho – Your New World of Video Entertainment!',
-        //     text: `Hi ${user.fullName},
 
-        //     We’re thrilled to have you join VidEcho, the platform where creativity meets community. 🌟
-            
-        //     Whether you're here to discover amazing content, showcase your own creations, or connect with like-minded individuals, VidEcho is built for you.
-            
-        //     Start exploring now to:
-        //     🎬 Watch and enjoy content from diverse creators.
-        //     📹 Share your unique ideas with the world.
-        //     🤝 Build a following and grow your influence.
-            
-        //     Your journey to creating, connecting, and enjoying starts here. Welcome aboard!
-            
-        //     Cheers,
-        //     The VidEcho Team`
-        // }
 
-        // auth.sendMail(reciever, (err, emailResponse) => {
-        //     if (err) {
-        //         throw new Error(err.message);
-        //     }
-        //     console.log("Mail Sent")
-        // })
+            const auth = nodemailer.createTransport(
+                {
+                    service: 'gmail',
+                    secure: true,
+                    port: 465,
+                    auth: {
+                        user: process.env.SENDER_EMAIL,
+                        pass: process.env.PASS
+                    }
+                }
+            )
+            const reciever = {
+                from: process.env.SENDER_EMAIL,
+                to: email,
+                subject: 'Welcome to VidEcho – Your New World of Video Entertainment!',
+                text: `Hi ${user.fullName},
+
+            We’re thrilled to have you join VidEcho, the platform where creativity meets community. 🌟
+            
+            Whether you're here to discover amazing content, showcase your own creations, or connect with like-minded individuals, VidEcho is built for you.
+            
+            Start exploring now to:
+            🎬 Watch and enjoy content from diverse creators.
+            📹 Share your unique ideas with the world.
+            🤝 Build a following and grow your influence.
+            
+            Your journey to creating, connecting, and enjoying starts here. Welcome aboard!
+            
+            Cheers,
+            The VidEcho Team`
+            }
+
+            auth.sendMail(reciever, (err, emailResponse) => {
+                if (err) {
+                    throw new Error(err.message);
+                }
+                console.log("Mail Sent")
+            })
+
+
+        }
 
         res.status(201).json({
             message: 'SignedUp successfully !! '
@@ -162,16 +175,16 @@ AuthRouter.get('/api/auth/profile', AuthCheck, async (req, res) => {
         })
     }
 })
-AuthRouter.post('/api/auth/resetPassword',async (req,res) => {
+AuthRouter.post('/api/auth/resetPassword', async (req, res) => {
     try {
-        const {email,oldpassword,newpassword} = req.body;
+        const { email, oldpassword, newpassword } = req.body;
         if (!email) {
             return res.status(400).json({
                 message: "Please enter the email"
             })
         }
 
-        const user = await User.findOne({email:email})
+        const user = await User.findOne({ email: email })
         if (!user) {
             return res.status(400).json({
                 message: "User Does not exist ."
@@ -185,12 +198,12 @@ AuthRouter.post('/api/auth/resetPassword',async (req,res) => {
             })
         }
 
-        const hashedPassword = await bcrypt.hash(newpassword,10)
+        const hashedPassword = await bcrypt.hash(newpassword, 10)
 
-        await User.findByIdAndUpdate({_id:user._id},{
-            password:hashedPassword
+        await User.findByIdAndUpdate({ _id: user._id }, {
+            password: hashedPassword
         })
-               // Sending Email 
+        // Sending Email 
         const auth = nodemailer.createTransport(
             {
                 service: 'gmail',
@@ -214,7 +227,7 @@ AuthRouter.post('/api/auth/resetPassword',async (req,res) => {
         Stay secure,  
         The VidEcho Team`
         };
-        
+
 
         auth.sendMail(receiver, (err, emailResponse) => {
             if (err) {
@@ -224,7 +237,7 @@ AuthRouter.post('/api/auth/resetPassword',async (req,res) => {
         })
 
         res.status(201).json({
-            message:'Password Updated successfully'
+            message: 'Password Updated successfully'
         })
 
 

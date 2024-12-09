@@ -30,7 +30,7 @@ const UserSchema = new mongoose.Schema({
     },
     avatar: {
         type: String,
-        required: true,
+        // required: true,
     },
     coverImage: {
         type: String,
