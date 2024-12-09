@@ -135,7 +135,6 @@ VideoRouter.post('/api/video/like/:videoId',AuthCheck,async (req,res)=>{
         const videoId = req.params.videoId;
 
         const video = await Video.findById(videoId);
-        
 
 
     } catch (error) {
