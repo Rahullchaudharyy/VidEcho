@@ -66,7 +66,7 @@ AuthRouter.post('/api/auth/signup', upload.single('avatar'), async (req, res) =>
             fullName,
             password: hashedPassword,
             username: uniqueusername,
-            avatar: avatarUrl
+            avatar: avatarUrl.url
         })
 
         await user.save()
@@ -246,6 +246,19 @@ AuthRouter.post('/api/auth/resetPassword', async (req, res) => {
             message: error.message
         })
         console.log(error)
+    }
+})
+AuthRouter.post('/api/auth/signout',async (req,res) => {
+    try {
+        const token = req.cookies.token;
+        res.cookie('token',null)
+        res.status(200).json({
+            message:'Signed Out successfully  !!'
+        })
+    } catch (error) {
+       res.status(400).json({
+        message:'Error'+error.message
+       }) 
     }
 })
 

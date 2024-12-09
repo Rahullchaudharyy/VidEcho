@@ -29,6 +29,5 @@ const AuthCheck = async (req,res,next) =>{
         })
     }
 }
-
 export {AuthCheck}
 

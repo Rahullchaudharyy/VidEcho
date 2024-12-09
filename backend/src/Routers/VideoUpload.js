@@ -1,19 +1,20 @@
 import express from 'express'
 import { AuthCheck } from '../Middlewares/AuthCheck.js'
 import { upload, VideoUploader } from '../Middlewares/Multer.js'
-import { UploadImage, UploadVideo } from '../utils/ImageUpload.js'
+import { getVideoAllDetailsCloud, UploadImage, UploadVideo } from '../utils/ImageUpload.js'
 import { fileTypeFromBuffer } from 'file-type'; // Correct ES Module import
 import { Video } from '../models/Video.model.js';
-import streamifier from 'streamifier';
 
 const VideoUploadRouter = express.Router()
 
 VideoUploadRouter.post('/api/video/upload', AuthCheck, VideoUploader.fields([{ name: 'VideoSource' }, { name: 'thumbnail' }]), async (req, res) => {
     try {
-        const LoggedInUser = req.user;
+        const LoggedInUser = req.user ;
         const { Title, description, tags } = req.body;
         const { VideoSource, thumbnail } = req.files;
-        console.log(VideoSource)
+        console.log(VideoSource);
+
+        
         // const fileBuffer = req.file.buffer; // Get file buffer from the request
         // const type = await fileTypeFromBuffer(fileBuffer); // Check the file type
 
@@ -24,17 +25,20 @@ VideoUploadRouter.post('/api/video/upload', AuthCheck, VideoUploader.fields([{ n
         if (!Title || !description) {
             throw new Error("Title and description are Must");
         }
+
         const VideoUploadOnCloud = await UploadVideo(VideoSource[0].path)
         const ImageUploadOnCloud = await UploadImage(thumbnail[0].path)
+        const VideoDetails = await getVideoAllDetailsCloud(VideoUploadOnCloud.public_id)
+        // console.log(VideoDetails)/
 
         const video = new Video({
             Title,
             description,
             tags:tags|'',
-            VideoSource:VideoUploadOnCloud,
-            thumbnail:ImageUploadOnCloud,
-            VideoOwner:LoggedInUser._id
-
+            VideoSource:VideoUploadOnCloud.url,
+            thumbnail:ImageUploadOnCloud.url,
+            VideoOwner:LoggedInUser._id,
+            duration:VideoDetails.duration
         })
 
         await video.save()
@@ -46,7 +50,7 @@ VideoUploadRouter.post('/api/video/upload', AuthCheck, VideoUploader.fields([{ n
 
 
     } catch (error) {
-        console.log(error)
+        console.log(error.message)
         res.status(400).json({
             message: error.message
         })
