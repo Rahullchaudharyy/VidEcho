@@ -12,7 +12,7 @@ VideoUploadRouter.post('/api/video/upload', AuthCheck, VideoUploader.fields([{ n
         const LoggedInUser = req.user ;
         const { Title, description, tags } = req.body;
         const { VideoSource, thumbnail } = req.files;
-        console.log(VideoSource);
+        console.log(VideoSource,thumbnail);
 
         
         // const fileBuffer = req.file.buffer; // Get file buffer from the request
@@ -27,6 +27,7 @@ VideoUploadRouter.post('/api/video/upload', AuthCheck, VideoUploader.fields([{ n
         }
 
         const VideoUploadOnCloud = await UploadVideo(VideoSource[0].path)
+        
         const ImageUploadOnCloud = await UploadImage(thumbnail[0].path)
         const VideoDetails = await getVideoAllDetailsCloud(VideoUploadOnCloud.public_id)
         // console.log(VideoDetails)/
@@ -50,7 +51,7 @@ VideoUploadRouter.post('/api/video/upload', AuthCheck, VideoUploader.fields([{ n
 
 
     } catch (error) {
-        console.log(error.message)
+        console.log(error)
         res.status(400).json({
             message: error.message
         })

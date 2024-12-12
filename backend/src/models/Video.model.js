@@ -21,7 +21,7 @@ const VideoSchema = new mongoose.Schema({
     likes:[
         {
         type:mongoose.Schema.Types.ObjectId,
-        ref:"Like"
+        ref:"User"
         }
     ],
     VideoSource:{

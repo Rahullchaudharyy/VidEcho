@@ -25,10 +25,12 @@ const CommentSchema = new mongoose.Schema({
             ref:"Comment"
         }
     ],
-    likes:{
-        type:Number,
-        default:0
-        
+    likes:[{
+        type:mongoose.Schema.Types.ObjectId, 
+    }],
+    status:{
+        type:String,
+        enum:["comment","reply"]
     }
 
 
