@@ -4,6 +4,7 @@ import { Video } from '../models/Video.model.js';
 import { upload } from '../Middlewares/Multer.js'
 import { deleteVideo, GetDetailsFromUrl, UploadImage } from '../utils/ImageUpload.js';
 import { Comment } from '../models/Comment.model.js';
+import { Playlist } from '../models/PlaylistModel.js';
 const VideoRouter = express.Router()
 // feed pagination
 VideoRouter.get('/api/videos/feed/', AuthCheck, async (req, res) => {
@@ -163,6 +164,13 @@ VideoRouter.post('/api/video/like/:videoId', AuthCheck, async (req, res) => {
 
 
         await video.save();
+        if (user.likedVideos.includes(video._id)) {
+            user.likedVideos.pull(video._id);
+        } else if (!user.likedVideos.includes(video._id)) {
+            user.likedVideos.push(video._id);
+        }
+        await user.save();
+
 
         res.status(201).json({
             message: message
@@ -201,7 +209,7 @@ VideoRouter.post('/api/video/comment/:videoId', AuthCheck, async (req, res) => {
             commentBy: user._id,
             Video: video._id,
             TextContent: TextContent,
-            status:"comment"
+            status: "comment"
 
         })
 
@@ -237,26 +245,26 @@ VideoRouter.post('/api/video/reply/:videoId/:parantCommentId', AuthCheck, async 
         const video = await Video.findById(videoId)
         if (!video) {
             res.status(404).json({
-                message:"Not Found ."
+                message: "Not Found ."
             })
         };
         const comment = await Comment.findById(parantCommentId);
 
 
         const Reply = new Comment({
-            Video:video._id,
-            parentComment:parantCommentId,
-            TextContent:text,
-            commentBy:user._id,
-            status:"reply"
+            Video: video._id,
+            parentComment: parantCommentId,
+            TextContent: text,
+            commentBy: user._id,
+            status: "reply"
         })
         await Reply.save()
-        
+
         comment.replies.push(Reply._id)
         await comment.save()
 
         res.status(201).json({
-            message:'Replied Successfully !!'
+            message: 'Replied Successfully !!'
         })
 
     } catch (error) {
@@ -267,104 +275,105 @@ VideoRouter.post('/api/video/reply/:videoId/:parantCommentId', AuthCheck, async 
     }
 })
 // get all reply on the specific comment 
-VideoRouter.get('/api/comment/replies/:commentId',AuthCheck,async (req,res) => {
+VideoRouter.get('/api/comment/replies/:commentId', AuthCheck, async (req, res) => {
 
     try {
-   const commentid = req.params.commentId;
-   const comment = await Comment.findById(commentid);
-//    console.log(comment)
-   const replies  = comment.replies;
-   const allReplies = await Comment.find({
-    _id:{$in:replies}
-   })
+        const commentid = req.params.commentId;
+        const comment = await Comment.findById(commentid);
+        //    console.log(comment)
+        const replies = comment.replies;
+        const allReplies = await Comment.find({
+            _id: { $in: replies }
+        })
 
-   res.status(200).json({
-    message:"All replies of this Perticuller comment-" + `*${comment.TextContent}*`,
-    data:allReplies
-   })
+        res.status(200).json({
+            message: "All replies of this Perticuller comment-" + `*${comment.TextContent}*`,
+            data: allReplies
+        })
     } catch (error) {
         res.status(500).json({
-            message:"error :" + error.message
+            message: "error :" + error.message
         })
     }
-    
+
 })
 // get all comment on specific video
-VideoRouter.get('/api/video/comments/:videoId',AuthCheck,async (req,res) => {
+VideoRouter.get('/api/video/comments/:videoId', AuthCheck, async (req, res) => {
     try {
         const videoId = req.params.videoId;
         const video = await Video.findById(videoId);
         if (!video) {
             return res.status(404).json({
-                message:"Cant find the video you are looking for .."
+                message: "Cant find the video you are looking for .."
             })
         }
 
         const commentsIds = video.comments;
         const allcomments = await Comment.find({
-            _id:{$in:commentsIds}
+            _id: { $in: commentsIds }
         })
         res.status(200).json({
-            message: "All Comments on"+`'${video.Title}'`,
-            data:allcomments
+            message: "All Comments on" + `'${video.Title}'`,
+            data: allcomments
         })
     } catch (error) {
         res.status(404).json({
-            message:error.message
+            message: error.message
         })
     }
 })
 // delete the speccicf comment
-VideoRouter.delete('/api/video/comment/delete/:commentId',AuthCheck,async (req,res) => {
-  try {
-    const user = req.user;
-    const CommentId = req.params.commentId;
-    
-    const comment = await Comment.findById(CommentId)
-    const video = await Video.findById(comment.Video)
+VideoRouter.delete('/api/video/comment/delete/:commentId', AuthCheck, async (req, res) => {
+    try {
+        const user = req.user;
+        const CommentId = req.params.commentId;
 
-    if (!comment) {
-        return res.status(404).json({
-            message:"Not found"
+        const comment = await Comment.findById(CommentId)
+        const video = await Video.findById(comment.Video)
+
+        if (!comment) {
+            return res.status(404).json({
+                message: "Not found"
+            })
+        }
+
+        if (comment.commentBy.toString() !== user._id.toString()) {
+            return res.status(503).json({
+                message: "Invalid Request"
+            })
+        }
+
+        await comment.deleteOne()
+        video.comments.pull(comment._id)
+        await video.save()
+
+        res.status(201).json({
+            message: "Comment Deleted"
+        })
+
+    } catch (error) {
+        res.status(error.statusCode).json({
+            message: error.message
         })
     }
-
-    if (comment.commentBy.toString() !== user._id.toString()) {
-        return res.status(503).json({
-            message:"Invalid Request"
-        })
-    }
-    
-   await comment.deleteOne()
-   video.comments.pull(comment._id)
-    await video.save()
-   res.status(201).json({
-    message:"Comment Deleted"
-   })
-
-  } catch (error) {
-     res.status(error.statusCode).json({
-        message:error.message
-     })
-  }  
 })
 // Edit own comment
-VideoRouter.patch('/api/video/comment/edit/:commentId',AuthCheck,async (req,res) => {
+VideoRouter.patch('/api/video/comment/edit/:commentId', AuthCheck, async (req, res) => {
     try {
         const user = req.user;
         const comment = await Comment.findById(req.params.commentId);
         const TextContent = req.body.TextContent;
-        
+
         if (user._id.toString() !== comment.commentBy.toString()) {
             return res.status(400).json({
-                message:'Invalid Request'
-            })  
+                message: 'Invalid Request'
+            })
         }
 
         comment.TextContent = TextContent;
         await comment.save()
         res.status(201).json({
-            message:"Updated Sucessfully !!"
+            message: "Updated Sucessfully !!"
         })
     } catch (error) {
         res.status(400).json({
@@ -373,33 +382,52 @@ VideoRouter.patch('/api/video/comment/edit/:commentId',AuthCheck,async (req,res)
     }
 })
 // Like/unllike Commenet,
-
-VideoRouter.post('/api/video/comment/like/:commentId',AuthCheck,async (req,res) => {
+VideoRouter.post('/api/video/comment/like/:commentId', AuthCheck, async (req, res) => {
     try {
         const commentID = req.params.commentId;
-         const comment = await Comment.findByIdAndUpdate({_id:commentID})
-const user = req.user;
-let message ;
+        const comment = await Comment.findByIdAndUpdate({ _id: commentID })
+        const user = req.user;
+        let message;
 
 
-         if (comment.likes.includes(user._id)) {
+        if (comment.likes.includes(user._id)) {
             comment.likes.pull(user._id)
             message = 'unlike Sucessfully '
-         } else{
+        } else {
             comment.likes.push(user._id)
-            message="liked Sucessfully"
-         }
+            message = "liked Sucessfully"
+        }
 
-         await comment.save()
+        await comment.save()
 
-         res.status(201).json({
-            message:message
-         })
+        res.status(201).json({
+            message: message
+        })
     } catch (error) {
         res.status(400).json({
             message: error.message
         })
-    }    
+    }
+})
+VideoRouter.get('/api/videos/likedvideos', AuthCheck, async (req, res) => {
+    try {
+        const videoId = req.params.videoID;
+        const user = req.user;
+
+        const likedVideos = await Video.find({
+            _id: { $in: user.likedVideos }
+        })
+
+        res.status(201).json({
+            message:"Liked Videos",
+            data:likedVideos
+        })
+
+    } catch (error) {
+        res.status(400).json({
+            message: error.message
+        })
+    }
 })
 
 

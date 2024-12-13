@@ -9,6 +9,7 @@ const VideoUploadRouter = express.Router()
 
 VideoUploadRouter.post('/api/video/upload', AuthCheck, VideoUploader.fields([{ name: 'VideoSource' }, { name: 'thumbnail' }]), async (req, res) => {
     try {
+        
         const LoggedInUser = req.user ;
         const { Title, description, tags } = req.body;
         const { VideoSource, thumbnail } = req.files;
@@ -21,6 +22,10 @@ VideoUploadRouter.post('/api/video/upload', AuthCheck, VideoUploader.fields([{ n
         // if (!type || !['image/jpeg', 'image/png', 'video/mp4'].includes(type.mime)) {
         //     return res.status(400).json({ message: 'Invalid file type!' });
         // }
+        if (!req.files || !req.files.VideoSource || !req.files.thumbnail) {
+            return res.status(400).json({ message: "Files not uploaded correctly!" });
+        }
+        
 
         if (!Title || !description) {
             throw new Error("Title and description are Must");
@@ -43,6 +48,9 @@ VideoUploadRouter.post('/api/video/upload', AuthCheck, VideoUploader.fields([{ n
         })
 
         await video.save()
+        LoggedInUser.UsersContent.push(video._id);
+        await LoggedInUser.save()
+
 
         
         res.status(201).json({

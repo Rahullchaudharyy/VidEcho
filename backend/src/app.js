@@ -6,6 +6,8 @@ import cookieparser from 'cookie-parser'
 import { ProfileRouter } from './Routers/Profile.js'
 import { VideoUploadRouter } from './Routers/VideoUpload.js'
 import { VideoRouter } from './Routers/Video.js'
+import { PlaylistRouter } from './Routers/PlaylistRouter.js'
+import { SubscriptionRouter } from './Routers/SubscriptionRouter.js'
 dotenv.config()
 
 
@@ -27,5 +29,7 @@ app.use('/',AuthRouter)
 app.use('/',ProfileRouter)
 app.use('/',VideoUploadRouter)
 app.use('/',VideoRouter)
+app.use('/',PlaylistRouter)
+app.use('/',SubscriptionRouter)
 
 

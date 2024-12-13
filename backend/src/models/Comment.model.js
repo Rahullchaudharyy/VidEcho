@@ -33,7 +33,7 @@ const CommentSchema = new mongoose.Schema({
         enum:["comment","reply"]
     }
 
-
+    
 },{
     timestamps:true
 })
