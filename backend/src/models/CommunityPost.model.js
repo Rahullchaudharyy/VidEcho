@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 
 const CommunityPostSchema = new mongoose.Schema({
 
-    Title:{
+    Information:{
         type:String,
         required:true,
         default:"Hey this is my Community Post"

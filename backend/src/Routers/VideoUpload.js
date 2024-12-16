@@ -6,7 +6,7 @@ import { fileTypeFromBuffer } from 'file-type'; // Correct ES Module import
 import { Video } from '../models/Video.model.js';
 
 const VideoUploadRouter = express.Router()
-
+// uploading the video 
 VideoUploadRouter.post('/api/video/upload', AuthCheck, VideoUploader.fields([{ name: 'VideoSource' }, { name: 'thumbnail' }]), async (req, res) => {
     try {
         

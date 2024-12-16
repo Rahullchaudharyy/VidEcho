@@ -8,6 +8,7 @@ import { VideoUploadRouter } from './Routers/VideoUpload.js'
 import { VideoRouter } from './Routers/Video.js'
 import { PlaylistRouter } from './Routers/PlaylistRouter.js'
 import { SubscriptionRouter } from './Routers/SubscriptionRouter.js'
+import { CommunityPostRout } from './Routers/CommunityPostRouter.js'
 dotenv.config()
 
 
@@ -31,5 +32,6 @@ app.use('/',VideoUploadRouter)
 app.use('/',VideoRouter)
 app.use('/',PlaylistRouter)
 app.use('/',SubscriptionRouter)
+app.use('/',CommunityPostRout)
 
 

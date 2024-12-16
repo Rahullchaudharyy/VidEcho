@@ -5,7 +5,7 @@ import { User } from '../models/User.model.js';
 import { Video } from '../models/Video.model.js';
 
 const PlaylistRouter = express.Router();
-
+// creating the playlist
 PlaylistRouter.post('/api/playlist/create', AuthCheck, async (req, res) => {
     try {
         const CurrentUser = req.user;
@@ -144,6 +144,7 @@ PlaylistRouter.post('/api/playlist/:action/:videoid/:playlistId', AuthCheck, asy
         })
     }
 })
+// deleteting the playlist
 PlaylistRouter.delete('/api/playlist/delete/:playlistid',AuthCheck,async (req,res) => {
     try {
         const user = req.user;
@@ -216,7 +217,6 @@ PlaylistRouter.patch('/api/playlist/edit/:playlistId',AuthCheck,async (req,res) 
 })
 // save the playlist 
 // we will think about it.
-
 PlaylistRouter.post('/api/playlist/save/:playlistID',AuthCheck,async (req,res) => {
     try {
         const user = req.user;

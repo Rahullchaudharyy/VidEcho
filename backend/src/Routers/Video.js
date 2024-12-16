@@ -409,6 +409,7 @@ VideoRouter.post('/api/video/comment/like/:commentId', AuthCheck, async (req, re
         })
     }
 })
+// get all liked video
 VideoRouter.get('/api/videos/likedvideos', AuthCheck, async (req, res) => {
     try {
         const videoId = req.params.videoID;

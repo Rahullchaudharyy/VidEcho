@@ -135,7 +135,7 @@ AuthRouter.post('/api/auth/signin', async (req, res) => {
             })
         }
 
-        const user = await User.findOne({ email })
+        const user = await User.findOne({ email }).select('password')
         if (!user) {
             return res.status(400).json({
                 message: 'Invallid Credentials'
@@ -156,6 +156,7 @@ AuthRouter.post('/api/auth/signin', async (req, res) => {
         })
 
     } catch (error) {
+        console.log(error)
         res.status(400).json({
             message: error.message
         })
@@ -245,7 +246,6 @@ AuthRouter.post('/api/auth/resetPassword', async (req, res) => {
         res.status(400).json({
             message: error.message
         })
-        console.log(error)
     }
 })
 AuthRouter.post('/api/auth/signout',async (req,res) => {

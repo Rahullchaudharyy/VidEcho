@@ -5,7 +5,7 @@ import { UploadImage } from '../utils/ImageUpload.js';
 
 const ProfileRouter = express.Router()
 
-
+// uPLDATE PROFILE 
 ProfileRouter.patch('/api/profile/edit',AuthCheck,upload.fields([{name:'avatar'},{name:'coverImage'}]),async (req,res) => {
     try {
         const LoggedinUser = req.user;

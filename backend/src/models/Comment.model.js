@@ -4,7 +4,10 @@ const CommentSchema = new mongoose.Schema({
     Video:{
         type:mongoose.Schema.Types.ObjectId,
         ref:"Video",
-        required:true
+    },
+    Community:{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:'Community'
     },
     TextContent:{
         type:String,
