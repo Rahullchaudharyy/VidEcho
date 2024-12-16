@@ -26,11 +26,13 @@ ProfileRouter.patch('/api/profile/edit',AuthCheck,upload.fields([{name:'avatar'}
 
         if (UpdateFields['avatar']) {
             const avatarUrl = await UploadImage(UpdateFields['avatar'][0].path)
-            LoggedinUser.avatar = avatarUrl;
+            console.log(avatarUrl.url)
+            LoggedinUser.avatar = avatarUrl.url;
         } 
         if (UpdateFields['coverImage']) {
             const coverImageURL = await UploadImage(UpdateFields['coverImage'][0].path)
-            LoggedinUser.coverImage = coverImageURL;
+            console.log(coverImageURL.url)
+            LoggedinUser.coverImage = coverImageURL.url;
         }
 
         // Object.keys(UpdateFields).forEach((key)=>LoggedinUser[key] = UpdateFields[key])

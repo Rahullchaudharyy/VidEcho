@@ -61,6 +61,7 @@ AuthRouter.post('/api/auth/signup', upload.single('avatar'), async (req, res) =>
 
         }
         const uniqueusername = await RandomUserNameGen(fullName)
+        // console.log(avatarUrl)
         const user = new User({
             email,
             fullName,

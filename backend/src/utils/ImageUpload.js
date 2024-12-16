@@ -16,8 +16,9 @@ const UploadImage = async (ImagePath) => {
         })
 
         console.log("Image Uploaded")
+        // console.log(result.url)
         fs.unlinkSync(ImagePath)
-
+        
         return result
     } catch (error) {
         fs.unlinkSync(ImagePath)
@@ -31,7 +32,8 @@ const UploadVideo = async (videoPath) => {
         const result = await cloudinary.v2.uploader.upload(videoPath, {
             resource_type: 'video'
         })
-
+        
+        // console.log(result.url)
         console.log("Video Uploaded")
         fs.unlinkSync(videoPath)
 
