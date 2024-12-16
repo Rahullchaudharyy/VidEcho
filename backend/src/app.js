@@ -18,7 +18,7 @@ app.use(cookieparser())
 
 ConectDatabse().then(()=>{
     app.listen(process.env.PORT,()=>{
-        console.log(`▤ Server Started ↯ on http://localhost:${process.env.PORT}`)
+        console.log(`▤ Server Started ↯ on http://localhost:${process.env.PORT || 3000}`)
     })
 }).catch((error)=>{
         console.log(error.message)
