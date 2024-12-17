@@ -9,12 +9,20 @@ import { VideoRouter } from './Routers/Video.js'
 import { PlaylistRouter } from './Routers/PlaylistRouter.js'
 import { SubscriptionRouter } from './Routers/SubscriptionRouter.js'
 import { CommunityPostRout } from './Routers/CommunityPostRouter.js'
+import cors from 'cors'
 dotenv.config()
 
 
 const app = express()
 app.use(express.json())
 app.use(cookieparser())
+app.use(cors({
+    origin:'http://localhost:5173',
+    methods:['GET', 'POST', 'PUT', 'DELETE'],
+    credentials:true
+}))
+app.use(cors())
+
 
 ConectDatabse().then(()=>{
     app.listen(process.env.PORT,()=>{
