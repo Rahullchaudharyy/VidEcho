@@ -158,7 +158,8 @@ AuthRouter.post('/api/auth/signin', async (req, res) => {
             maxAge: 24 * 60 * 60 * 1000, 
         })
         res.status(200).json({
-            message: 'LoggedIn successfully'
+            message: 'LoggedIn successfully',
+            Token : token,
         })
 
     } catch (error) {
